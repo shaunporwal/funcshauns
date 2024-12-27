@@ -74,7 +74,6 @@ jobs:
 
   publish-to-pypi:
     name: Publish Python 🐍 distribution 📦 to PyPI
-    if: !startsWith(github.ref_name, 'test')  # Run only if the tag does not start with 'test'
     needs:
       - build
     runs-on: ubuntu-latest
