@@ -2,9 +2,10 @@ name: Publish Python 🐍 distribution 📦 to PyPI and TestPyPI
 
 on:
   push:
-    tags:
-      - 'test*'  # Trigger workflow for tags starting with 'test'
-      - '*'      # Trigger workflow for all tags
+    branches:  # Trigger workflow for every push
+      - '**'
+    tags:  # Trigger workflow for tags
+      - '*'
 
 jobs:
   build:
@@ -20,8 +21,7 @@ jobs:
         with:
           python-version: "3.x"
       - name: Install dependencies
-        run: |
-          python3 -m pip install build --user
+        run: python3 -m pip install build --user
       - name: Build a binary wheel and a source tarball
         run: python3 -m build
       - name: Store the distribution packages
@@ -32,17 +32,10 @@ jobs:
 
   publish-to-testpypi:
     name: Publish Python 🐍 distribution 📦 to TestPyPI
-    if: startsWith(github.ref_name, 'test')  # Run only if the tag starts with 'test'
+    if: github.event_name == 'push'
     needs:
       - build
     runs-on: ubuntu-latest
-
-    environment:
-      name: testpypi
-      url: https://test.pypi.org/p/funcshauns
-
-    permissions:
-      id-token: write  # IMPORTANT: mandatory for trusted publishing
 
     steps:
       - name: Checkout code
@@ -52,32 +45,7 @@ jobs:
         with:
           python-version: "3.x"
       - name: Install dependencies
-        run: python3 -m pip install toml --user  # Install toml here
-      - name: Verify tag matches version
-        run: |
-          VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
-          TAG=${{ github.ref_name }}
-          echo "Raw tag: $TAG"  # Debugging: Log the raw tag
-
-          # Explicitly handle test prefix and regular prefix
-          if [[ $TAG == refs/tags/test* ]]; then
-            TAG=${TAG#"refs/tags/test"}  # Remove 'refs/tags/test' prefix
-          elif [[ $TAG == refs/tags/* ]]; then
-            TAG=${TAG#"refs/tags/"}  # Remove 'refs/tags/' prefix for regular tags
-          fi
-
-          echo "Final tag after prefix removal: $TAG"  # Debugging: Log the final tag
-          if [ "$TAG" != "$VERSION" ]; then
-              echo "ERROR: Tag $TAG does not match version in pyproject.toml: $VERSION"
-              exit 1
-          fi
-      - name: Check if version exists on TestPyPI
-        run: |
-          VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
-          curl -s https://test.pypi.org/pypi/funcshauns/json | jq -e ".releases[\"$VERSION\"]" > /dev/null && {
-              echo "Version $VERSION already exists on TestPyPI. Skipping publish.";
-              exit 0;
-          } || echo "Version $VERSION does not exist. Proceeding with publish."
+        run: python3 -m pip install toml --user
       - name: Download all the dists
         uses: actions/download-artifact@v4
         with:
@@ -90,17 +58,10 @@ jobs:
 
   publish-to-pypi:
     name: Publish Python 🐍 distribution 📦 to PyPI
-    if: startsWith(github.ref_name, 'refs/tags/') && ! startsWith(github.ref_name, 'refs/tags/test')
+    if: startsWith(github.ref, 'refs/tags/')
     needs:
       - build
     runs-on: ubuntu-latest
-
-    environment:
-      name: pypi
-      url: https://pypi.org/p/funcshauns
-
-    permissions:
-      id-token: write  # IMPORTANT: mandatory for trusted publishing
 
     steps:
       - name: Checkout code
@@ -110,13 +71,12 @@ jobs:
         with:
           python-version: "3.x"
       - name: Install dependencies
-        run: python3 -m pip install toml --user  # Install toml here
+        run: python3 -m pip install toml --user
       - name: Verify tag matches version
         run: |
           VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
           TAG=${{ github.ref_name }}
           TAG=${TAG#"refs/tags/"}
-          echo "Final tag after removing 'refs/tags/': $TAG"  # Debugging
           if [ "$TAG" != "$VERSION" ]; then
               echo "ERROR: Tag $TAG does not match version in pyproject.toml: $VERSION"
               exit 1
