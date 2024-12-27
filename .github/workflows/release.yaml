@@ -1,0 +1,114 @@
+name: Publish Python 🐍 distribution 📦 to PyPI and TestPyPI
+
+on:
+  push:
+    tags:
+      - 'test*'  # Trigger workflow for tags starting with 'test'
+      - '*'      # Trigger workflow for all tags
+
+jobs:
+  build:
+    name: Build distribution 📦
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - name: Install pypa/build
+        run: python3 -m pip install build --user
+      - name: Build a binary wheel and a source tarball
+        run: python3 -m build
+      - name: Store the distribution packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+
+  publish-to-testpypi:
+    name: Publish Python 🐍 distribution 📦 to TestPyPI
+    if: startsWith(github.ref_name, 'test')  # Run only if the tag starts with 'test'
+    needs:
+      - build
+    runs-on: ubuntu-latest
+
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/your-package-name
+
+    permissions:
+      id-token: write  # IMPORTANT: mandatory for trusted publishing
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Verify tag matches version
+        run: |
+          VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
+          TAG=${{ github.ref_name }}
+          TAG=${TAG#"refs/tags/test"}
+          if [ "$TAG" != "$VERSION" ]; then
+            echo "ERROR: Tag $TAG does not match version in pyproject.toml: $VERSION"
+            exit 1
+          fi
+      - name: Check if version exists on TestPyPI
+        run: |
+          VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
+          curl -s https://test.pypi.org/pypi/your-package-name/json | jq -e ".releases[\"$VERSION\"]" > /dev/null && {
+            echo "Version $VERSION already exists on TestPyPI. Skipping publish.";
+            exit 0;
+          } || echo "Version $VERSION does not exist. Proceeding with publish."
+      - name: Download all the dists
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+      - name: Publish distribution 📦 to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
+  publish-to-pypi:
+    name: Publish Python 🐍 distribution 📦 to PyPI
+    if: !startsWith(github.ref_name, 'test')  # Run only if the tag does not start with 'test'
+    needs:
+      - build
+    runs-on: ubuntu-latest
+
+    environment:
+      name: pypi
+      url: https://pypi.org/p/your-package-name
+
+    permissions:
+      id-token: write  # IMPORTANT: mandatory for trusted publishing
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Verify tag matches version
+        run: |
+          VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
+          TAG=${{ github.ref_name }}
+          TAG=${TAG#"refs/tags/"}
+          if [ "$TAG" != "$VERSION" ]; then
+            echo "ERROR: Tag $TAG does not match version in pyproject.toml: $VERSION"
+            exit 1
+          fi
+      - name: Check if version exists on PyPI
+        run: |
+          VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
+          curl -s https://pypi.org/pypi/your-package-name/json | jq -e ".releases[\"$VERSION\"]" > /dev/null && {
+            echo "Version $VERSION already exists on PyPI. Skipping publish.";
+            exit 0;
+          } || echo "Version $VERSION does not exist. Proceeding with publish."
+      - name: Download all the dists
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+      - name: Publish distribution 📦 to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
