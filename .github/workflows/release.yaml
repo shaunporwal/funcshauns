@@ -74,6 +74,7 @@ jobs:
 
   publish-to-pypi:
     name: Publish Python 🐍 distribution 📦 to PyPI
+    if: startsWith(github.ref_name, 'refs/tags/') && ! startsWith(github.ref_name, 'refs/tags/test')
     needs:
       - build
     runs-on: ubuntu-latest
