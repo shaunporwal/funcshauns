@@ -57,17 +57,18 @@ jobs:
         run: |
           VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
           TAG=${{ github.ref_name }}
-          TAG=${TAG#"refs/tags/test"}
+          TAG=${TAG#"refs/tags/test"}  # Remove 'refs/tags/test' prefix for test tags
+          TAG=${TAG#"refs/tags/"}  # Remove 'refs/tags/' prefix for non-test tags
           if [ "$TAG" != "$VERSION" ]; then
-            echo "ERROR: Tag $TAG does not match version in pyproject.toml: $VERSION"
-            exit 1
+              echo "ERROR: Tag $TAG does not match version in pyproject.toml: $VERSION"
+              exit 1
           fi
       - name: Check if version exists on TestPyPI
         run: |
           VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
           curl -s https://test.pypi.org/pypi/funcshauns/json | jq -e ".releases[\"$VERSION\"]" > /dev/null && {
-            echo "Version $VERSION already exists on TestPyPI. Skipping publish.";
-            exit 0;
+              echo "Version $VERSION already exists on TestPyPI. Skipping publish.";
+              exit 0;
           } || echo "Version $VERSION does not exist. Proceeding with publish."
       - name: Download all the dists
         uses: actions/download-artifact@v4
@@ -108,15 +109,15 @@ jobs:
           TAG=${{ github.ref_name }}
           TAG=${TAG#"refs/tags/"}
           if [ "$TAG" != "$VERSION" ]; then
-            echo "ERROR: Tag $TAG does not match version in pyproject.toml: $VERSION"
-            exit 1
+              echo "ERROR: Tag $TAG does not match version in pyproject.toml: $VERSION"
+              exit 1
           fi
       - name: Check if version exists on PyPI
         run: |
           VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
           curl -s https://pypi.org/pypi/funcshauns/json | jq -e ".releases[\"$VERSION\"]" > /dev/null && {
-            echo "Version $VERSION already exists on PyPI. Skipping publish.";
-            exit 0;
+              echo "Version $VERSION already exists on PyPI. Skipping publish.";
+              exit 0;
           } || echo "Version $VERSION does not exist. Proceeding with publish."
       - name: Download all the dists
         uses: actions/download-artifact@v4
