@@ -58,10 +58,15 @@ jobs:
           VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
           TAG=${{ github.ref_name }}
           echo "Raw tag: $TAG"  # Debugging: Log the raw tag
-          TAG=${TAG#"refs/tags/test"}  # Remove 'refs/tags/test' prefix for test tags
-          echo "After removing 'refs/tags/test': $TAG"  # Debugging: Log the tag after removal
-          TAG=${TAG#"refs/tags/"}  # Remove 'refs/tags/' prefix for non-test tags
-          echo "After removing 'refs/tags/': $TAG"  # Debugging: Log the final tag
+
+          # Check and remove 'refs/tags/test' if present
+          if [[ $TAG == refs/tags/test* ]]; then
+            TAG=${TAG#"refs/tags/test"}
+          else
+            TAG=${TAG#"refs/tags/"}
+          fi
+
+          echo "Final tag after prefix removal: $TAG"  # Debugging: Log the final tag
           if [ "$TAG" != "$VERSION" ]; then
               echo "ERROR: Tag $TAG does not match version in pyproject.toml: $VERSION"
               exit 1
