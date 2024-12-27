@@ -59,11 +59,11 @@ jobs:
           TAG=${{ github.ref_name }}
           echo "Raw tag: $TAG"  # Debugging: Log the raw tag
 
-          # Check and remove 'refs/tags/test' if present
+          # Explicitly handle test prefix and regular prefix
           if [[ $TAG == refs/tags/test* ]]; then
-            TAG=${TAG#"refs/tags/test"}
-          else
-            TAG=${TAG#"refs/tags/"}
+            TAG=${TAG#"refs/tags/test"}  # Remove 'refs/tags/test' prefix
+          elif [[ $TAG == refs/tags/* ]]; then
+            TAG=${TAG#"refs/tags/"}  # Remove 'refs/tags/' prefix for regular tags
           fi
 
           echo "Final tag after prefix removal: $TAG"  # Debugging: Log the final tag
