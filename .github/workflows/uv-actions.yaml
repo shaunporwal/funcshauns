@@ -49,8 +49,8 @@ jobs:
       - name: Install dependencies
         run: uv sync --all-extras --dev
 
-      - name: Run Black Formatting Check
-        run: uv run black --check .
+      - name: Run ruff Formatting Check
+        run: uv run ruff check .
 
   publish-to-testpypi:
     name: Publish to Test PyPI
