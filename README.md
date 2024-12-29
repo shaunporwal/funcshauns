@@ -1,7 +1,5 @@
-# funcshauns  
-My Python functions  
+# funcshauns - My Python Functions
 
-## Publishing a New Version to TestPyPI and PyPI  
+This package/repo is a playground in which I experiment with various technologies, python packing, function writing, optimizations, etc. 
 
-### Steps for Publishing to TestPyPI (for Testing)  
-
+[24-12-29] - lesson learned, never use tools that are brand new. I tried using uv, it's the absolute worse for python packaging and publishing to pypi/test.pypi.
