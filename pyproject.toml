@@ -10,5 +10,7 @@ requires-python = ">=3.9"
 dependencies = []
 
 [dependency-groups]
-dev = []
+dev = [
+    "pytest>=8.3.4",
+]
 
