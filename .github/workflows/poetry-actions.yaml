@@ -4,12 +4,19 @@ on:
   push:
     branches:
       - main
+    tags:
+      - '*'
   pull_request:
 
 jobs:
   test:
     name: Run Tests
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: [3.10, 3.11, 3.12]
 
     steps:
       - name: Checkout code
@@ -18,7 +25,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python-version }}
 
       - name: Install Poetry
         run: pip install poetry
@@ -28,7 +35,7 @@ jobs:
 
       - name: Run Tests
         run: poetry run pytest
-      
+
   publish-to-testpypi:
     name: Publish to Test PyPI
     if: github.ref == 'refs/heads/main'
@@ -61,3 +68,36 @@ jobs:
 
       - name: Publish to Test PyPI
         run: poetry publish --repository testpypi
+
+  publish-to-pypi:
+    name: Publish to PyPI
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Configure PyPI
+        run: poetry config repositories.pypi https://upload.pypi.org/legacy/
+
+      - name: Set PyPI Token
+        run: poetry config pypi-token.pypi ${{ secrets.PYPI_API_TOKEN }}
+
+      - name: Install dependencies
+        run: poetry install --no-dev
+
+      - name: Build the package
+        run: poetry build
+
+      - name: Publish to PyPI
+        run: poetry publish --repository pypi
