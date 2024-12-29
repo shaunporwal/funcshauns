@@ -34,9 +34,6 @@ python = ">=3.9"
 pytest = ">=8.3.4"
 ruff = ">=0.8.4"
 
-[tool.poetry.repositories]
-testpypi = { url = "https://test.pypi.org/legacy/" }
-
 [build-system]
 requires = ["poetry-core>=1.3.0"]
 build-backend = "poetry.core.masonry.api"

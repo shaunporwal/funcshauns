@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ["3.11"]
+        python-version: ["3.9", "3.10", "3.11"]
 
     steps:
       - name: Checkout code
@@ -74,6 +74,12 @@ jobs:
       - name: Install Poetry
         run: pip install poetry
 
+      - name: Configure Test PyPI
+        run: poetry config repositories.testpypi https://test.pypi.org/legacy/
+
+      - name: Set Test PyPI Token
+        run: poetry config pypi-token.testpypi ${{ secrets.TEST_PYPI_API_TOKEN }}
+
       - name: Install dependencies
         run: poetry install --no-dev
 
@@ -81,6 +87,4 @@ jobs:
         run: poetry build
 
       - name: Publish to Test PyPI
-        env:
-          POETRY_PYPI_TOKEN: ${{ secrets.TEST_PYPI_API_TOKEN }}
         run: poetry publish --repository testpypi
