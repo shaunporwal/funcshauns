@@ -1,39 +1,25 @@
 [tool.poetry]
 name = "funcshauns"
-version = "0.1.0.11"
+version = "0.1.0.14"
 description = "My Python functions"
 authors = ["Shaun Porwal <shaun.porwal@gmail.com>"]
 license = "MIT"
 readme = "README.md"
+package-mode = true
+packages = [
+    { include = "funcshauns" }
+]
 
 [tool.poetry.dependencies]
 python = ">=3.9"
-pandas = "^2.2.3"
-
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.4"
 tomli = "^2.2.1"
 pathlib = "^1.0.1"
-black = "^24.10.0"
+jupyterlab = "^4.3.4"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.black]
-line-length = 100
-target-version = ['py39', 'py310', 'py311', 'py312']
-include = '\.pyi?$'
-extend-exclude = '''
-/(
-  \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | build
-  | dist
-)/
-'''
