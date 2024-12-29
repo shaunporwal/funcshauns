@@ -18,7 +18,6 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
         python-version: ["3.10", "3.11", "3.12"]
 
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -61,14 +60,28 @@ jobs:
       - name: Set Test PyPI Token
         run: poetry config pypi-token.testpypi ${{ secrets.TEST_PYPI_API_TOKEN }}
 
-      - name: Install dependencies
-        run: poetry install --no-dev
+      - name: Get current version
+        id: get-version
+        run: echo "VERSION=$(poetry version -s)" >> $GITHUB_ENV
 
-      - name: Build the package
-        run: poetry build
+      - name: Check version on Test PyPI
+        id: version-check
+        run: |
+          RESPONSE=$(curl -s https://test.pypi.org/pypi/$PACKAGE_NAME/json)
+          if echo "$RESPONSE" | jq -r '.releases | keys | .[]' | grep -q "$VERSION"; then
+            echo "skip=true" >> $GITHUB_ENV
+          else
+            echo "skip=false" >> $GITHUB_ENV
+        env:
+          PACKAGE_NAME: <your-package-name>
+          VERSION: ${{ env.VERSION }}
 
       - name: Publish to Test PyPI
-        run: poetry publish --repository testpypi
+        if: env.skip != 'true'
+        run: |
+          poetry install --no-dev
+          poetry build
+          poetry publish --repository testpypi
 
   publish-to-pypi:
     name: Publish to PyPI
@@ -94,11 +107,25 @@ jobs:
       - name: Set PyPI Token
         run: poetry config pypi-token.pypi ${{ secrets.PYPI_API_TOKEN }}
 
-      - name: Install dependencies
-        run: poetry install --no-dev
+      - name: Get current version
+        id: get-version
+        run: echo "VERSION=$(poetry version -s)" >> $GITHUB_ENV
 
-      - name: Build the package
-        run: poetry build
+      - name: Check version on PyPI
+        id: version-check
+        run: |
+          RESPONSE=$(curl -s https://pypi.org/pypi/$PACKAGE_NAME/json)
+          if echo "$RESPONSE" | jq -r '.releases | keys | .[]' | grep -q "$VERSION"; then
+            echo "skip=true" >> $GITHUB_ENV
+          else
+            echo "skip=false" >> $GITHUB_ENV
+        env:
+          PACKAGE_NAME: <your-package-name>
+          VERSION: ${{ env.VERSION }}
 
       - name: Publish to PyPI
-        run: poetry publish --repository pypi
+        if: env.skip != 'true'
+        run: |
+          poetry install --no-dev
+          poetry build
+          poetry publish --repository pypi
