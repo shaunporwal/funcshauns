@@ -49,7 +49,7 @@ jobs:
       - name: Install dependencies
         run: uv sync --all-extras --dev
 
-      - name: Run ruff Formatting Check
+      - name: Run Ruff Formatting Check
         run: uv run ruff check .
 
   publish-to-testpypi:
@@ -72,9 +72,9 @@ jobs:
         run: uv sync --all-extras --dev
 
       - name: Build the package
-        run: uv build --no-sources
+        run: uv build --no-sources --index-strategy unsafe-best-match
 
       - name: Publish to Test PyPI
         env:
           UV_PUBLISH_TOKEN: ${{ secrets.TEST_PYPI_API_TOKEN }}
-        run: uv publish --index testpypi
+        run: uv publish --index testpypi --index-strategy unsafe-best-match
