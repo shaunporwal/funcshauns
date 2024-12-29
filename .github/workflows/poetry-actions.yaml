@@ -60,6 +60,9 @@ jobs:
       - name: Set Test PyPI Token
         run: poetry config pypi-token.testpypi ${{ secrets.TEST_PYPI_API_TOKEN }}
 
+      - name: Install jq (if required)
+        run: sudo apt-get install -y jq
+
       - name: Get current version
         id: get-version
         run: echo "VERSION=$(poetry version -s)" >> $GITHUB_ENV
@@ -67,16 +70,13 @@ jobs:
       - name: Check version on Test PyPI
         id: version-check
         run: |
-          PACKAGE_NAME=${{ env.PACKAGE_NAME }}
-          VERSION=${{ env.VERSION }}
+          PACKAGE_NAME="funcshauns"
+          VERSION="${{ env.VERSION }}"
           RESPONSE=$(curl -s https://test.pypi.org/pypi/$PACKAGE_NAME/json || echo "error")
           if [ "$RESPONSE" != "error" ] && echo "$RESPONSE" | jq -r '.releases | keys | .[]' | grep -q "$VERSION"; then
             echo "skip=true" >> $GITHUB_ENV
           else
             echo "skip=false" >> $GITHUB_ENV
-        env:
-          PACKAGE_NAME: funcshauns
-          VERSION: ${{ env.VERSION }}
 
       - name: Publish to Test PyPI
         if: env.skip != 'true'
@@ -109,6 +109,9 @@ jobs:
       - name: Set PyPI Token
         run: poetry config pypi-token.pypi ${{ secrets.PYPI_API_TOKEN }}
 
+      - name: Install jq (if required)
+        run: sudo apt-get install -y jq
+
       - name: Get current version
         id: get-version
         run: echo "VERSION=$(poetry version -s)" >> $GITHUB_ENV
@@ -116,16 +119,13 @@ jobs:
       - name: Check version on PyPI
         id: version-check
         run: |
-          PACKAGE_NAME=${{ env.PACKAGE_NAME }}
-          VERSION=${{ env.VERSION }}
+          PACKAGE_NAME="funcshauns"
+          VERSION="${{ env.VERSION }}"
           RESPONSE=$(curl -s https://pypi.org/pypi/$PACKAGE_NAME/json || echo "error")
           if [ "$RESPONSE" != "error" ] && echo "$RESPONSE" | jq -r '.releases | keys | .[]' | grep -q "$VERSION"; then
             echo "skip=true" >> $GITHUB_ENV
           else
             echo "skip=false" >> $GITHUB_ENV
-        env:
-          PACKAGE_NAME: funcshauns
-          VERSION: ${{ env.VERSION }}
 
       - name: Publish to PyPI
         if: env.skip != 'true'
