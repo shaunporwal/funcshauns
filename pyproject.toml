@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "funcshauns"
-version = "0.1.0.9"
+version = "0.1.0.10"
 description = "My Python functions"
 authors = ["Shaun Porwal <shaun.porwal@gmail.com>"]
 license = "MIT"
