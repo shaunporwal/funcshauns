@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "funcshauns"
-version = "0.1.0.10"
+version = "0.1.0.11"
 description = "My Python functions"
 authors = ["Shaun Porwal <shaun.porwal@gmail.com>"]
 license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = ">=3.9"
 pandas = "^2.2.3"
 
 
