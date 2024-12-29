@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "funcshauns"
-version = "0.1.0.4"
+version = "0.1.0.5"
 description = "Add your description here"
 authors = ["Shaun Porwal <shaun.porwal@gmail.com>"]
 readme = "README.md"
