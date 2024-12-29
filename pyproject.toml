@@ -26,7 +26,6 @@ version = "0.1.0.4"
 description = "Add your description here"
 authors = ["Shaun Porwal <shaun.porwal@gmail.com>"]
 readme = "README.md"
-requires-python = ">=3.9"
 
 [tool.poetry.dependencies]
 python = ">=3.9"
