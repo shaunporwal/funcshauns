@@ -1,31 +1,10 @@
-[project]
-name = "funcshauns"
-version = "0.1.0.4"
-description = "Add your description here"
-readme = "README.md"
-authors = [
-    { name = "Shaun Porwal", email = "shaun.porwal@gmail.com" }
-]
-requires-python = ">=3.9"
-dependencies = []
-
-[dependency-groups]
-dev = [
-    "pytest>=8.3.4",
-    "ruff>=0.8.4",
-]
-
-[[tool.uv.index]]
-name = "testpypi"
-url = "https://test.pypi.org/simple/"
-publish-url = "https://test.pypi.org/legacy/"
-
 [tool.poetry]
 name = "funcshauns"
 version = "0.1.0.4"
 description = "Add your description here"
 authors = ["Shaun Porwal <shaun.porwal@gmail.com>"]
 readme = "README.md"
+packages = [{ include = "funcshauns", from = "src" }]
 
 [tool.poetry.dependencies]
 python = ">=3.9"
