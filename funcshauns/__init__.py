@@ -3,6 +3,7 @@ from pathlib import Path
 
 from funcshauns.funcshauns import get_repo_root
 
+
 # Dynamically extract version from pyproject.toml
 def get_version():
     """
@@ -15,6 +16,7 @@ def get_version():
     with pyproject_path.open("rb") as f:
         pyproject_data = tomli.load(f)
     return pyproject_data["tool"]["poetry"]["version"]
+
 
 __version__ = get_version()
 

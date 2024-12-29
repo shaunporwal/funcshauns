@@ -48,9 +48,9 @@ jobs:
       - name: Install dependencies
         run: poetry install --with dev
 
-      - name: Run ruff Formatting Check
-        run: poetry run ruff check .
-
+      - name: Run Black Formatting Check
+        run: poetry run black funcshauns
+      
   publish-to-testpypi:
     name: Publish to Test PyPI
     if: github.ref == 'refs/heads/main'
