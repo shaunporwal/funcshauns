@@ -63,20 +63,20 @@ jobs:
         id: get-version
         run: |
           VERSION=$(poetry version -s)
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
 
       - name: Check version on Test PyPI
         id: version-check
         run: |
           PACKAGE_NAME="funcshauns"
-          VERSION=${{ env.VERSION }}
-          RESPONSE=$(curl -s https://test.pypi.org/pypi/$PACKAGE_NAME/json || echo "error")
-          if [ "$RESPONSE" != "error" ] && echo "$RESPONSE" | jq -r '.releases | keys' | grep -q "\"$VERSION\""; then
-            echo "Version $VERSION already exists on Test PyPI."
+          RESPONSE=$(curl -s https://test.pypi.org/pypi/${PACKAGE_NAME}/json || echo "error")
+          if [ "$RESPONSE" != "error" ] && echo "$RESPONSE" | jq -r '.releases | keys' | grep -q "\"${VERSION}\""; then
+            echo "Version ${VERSION} already exists on Test PyPI."
             echo "skip=true" >> $GITHUB_ENV
           else
-            echo "Version $VERSION does not exist on Test PyPI. Proceeding with publish."
+            echo "Version ${VERSION} does not exist on Test PyPI. Proceeding with publish."
             echo "skip=false" >> $GITHUB_ENV
+          fi
 
       - name: Publish to Test PyPI
         if: env.skip != 'true'
@@ -113,20 +113,20 @@ jobs:
         id: get-version
         run: |
           VERSION=$(poetry version -s)
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
 
       - name: Check version on PyPI
         id: version-check
         run: |
           PACKAGE_NAME="funcshauns"
-          VERSION=${{ env.VERSION }}
-          RESPONSE=$(curl -s https://pypi.org/pypi/$PACKAGE_NAME/json || echo "error")
-          if [ "$RESPONSE" != "error" ] && echo "$RESPONSE" | jq -r '.releases | keys' | grep -q "\"$VERSION\""; then
-            echo "Version $VERSION already exists on PyPI."
+          RESPONSE=$(curl -s https://pypi.org/pypi/${PACKAGE_NAME}/json || echo "error")
+          if [ "$RESPONSE" != "error" ] && echo "$RESPONSE" | jq -r '.releases | keys' | grep -q "\"${VERSION}\""; then
+            echo "Version ${VERSION} already exists on PyPI."
             echo "skip=true" >> $GITHUB_ENV
           else
-            echo "Version $VERSION does not exist on PyPI. Proceeding with publish."
+            echo "Version ${VERSION} does not exist on PyPI. Proceeding with publish."
             echo "skip=false" >> $GITHUB_ENV
+          fi
 
       - name: Publish to PyPI
         if: env.skip != 'true'
