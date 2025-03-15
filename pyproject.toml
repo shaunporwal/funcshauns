@@ -1,6 +1,6 @@
 [project]
 name = "funcshauns"
-version = "0.1.1.5"
+version = "0.1.1.6"
 description = "My Python functions"
 authors = [
     {name = "Shaun Porwal", email = "shaun.porwal@gmail.com"}
