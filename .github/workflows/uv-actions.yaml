@@ -3,8 +3,7 @@ name: UV CI Pipeline
 on:
   push:
     branches:
-      - main
-      - switch-to-uv  # Add your current branch here for testing
+      - '*'  # Run on all branches
     tags:
       - '*'
   pull_request:
@@ -44,9 +43,8 @@ jobs:
           pytest
 
   publish-to-testpypi:
-    name: Publish to Test PyPI (DRY RUN on branch)
-    # Run on main or your current branch, but with different behavior
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/switch-to-uv'
+    name: Publish to Test PyPI
+    # Run on all branches
     needs: test
     runs-on: ubuntu-latest
 
@@ -59,13 +57,13 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install uv and twine
+      - name: Install uv and dependencies
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
           uv venv
           source .venv/bin/activate
-          uv pip install twine tomli
+          uv pip install tomli
 
       - name: Get package name and version
         id: get-package-info
@@ -91,26 +89,24 @@ jobs:
             echo "skip=false" >> $GITHUB_ENV
           fi
 
+      - name: Clean dist directory
+        if: env.skip != 'true'
+        run: |
+          rm -rf dist/*
+
       - name: Build package
         if: env.skip != 'true'
         run: |
           source .venv/bin/activate
           uv build
 
-      - name: Publish to Test PyPI (only on main)
-        if: env.skip != 'true' && github.ref == 'refs/heads/main'
+      - name: Publish to Test PyPI
+        if: env.skip != 'true'
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.TEST_PYPI_API_TOKEN }}
         run: |
           source .venv/bin/activate
-          twine upload --repository testpypi dist/* -u __token__ -p ${{ secrets.TEST_PYPI_API_TOKEN }}
-          
-      - name: DRY RUN - Publish to Test PyPI (on branch)
-        if: env.skip != 'true' && github.ref == 'refs/heads/switch-to-uv'
-        run: |
-          source .venv/bin/activate
-          echo "DRY RUN: Would upload to TestPyPI with command:"
-          echo "twine upload --repository testpypi dist/* -u __token__ -p [HIDDEN]"
-          echo "Package files that would be uploaded:"
-          ls -la dist/
+          uv publish --publish-url https://test.pypi.org/legacy/
 
   publish-to-pypi:
     name: Publish to PyPI
@@ -127,13 +123,13 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install uv and twine
+      - name: Install uv and dependencies
         run: |
           curl -LsSf https://astral.sh/uv/install.sh | sh
           echo "$HOME/.cargo/bin" >> $GITHUB_PATH
           uv venv
           source .venv/bin/activate
-          uv pip install twine tomli
+          uv pip install tomli
 
       - name: Get package name and version
         id: get-package-info
@@ -159,6 +155,11 @@ jobs:
             echo "skip=false" >> $GITHUB_ENV
           fi
 
+      - name: Clean dist directory
+        if: env.skip != 'true'
+        run: |
+          rm -rf dist/*
+
       - name: Build package
         if: env.skip != 'true'
         run: |
@@ -167,6 +168,8 @@ jobs:
 
       - name: Publish to PyPI
         if: env.skip != 'true'
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
         run: |
           source .venv/bin/activate
-          twine upload --repository pypi dist/* -u __token__ -p ${{ secrets.PYPI_API_TOKEN }} 
+          uv publish --publish-url https://upload.pypi.org/legacy/ 
