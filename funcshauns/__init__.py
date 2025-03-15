@@ -1,7 +1,7 @@
 import tomli  # TOML parser for Python <3.11
 from pathlib import Path
 
-from funcshauns.funcshauns import get_repo_root
+from funcshauns.utils import get_repo_root
 
 
 # Dynamically extract version from pyproject.toml
